@@ -32,7 +32,7 @@ const PostDetails = () => {
       {blog.image && (
         <img
           src={`${process.env.REACT_APP_CRUD}/uploads/${blog.image}`}
-          alt={`Image for ${blog.title}`}
+          alt={`${blog.title} Image`}
           style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }}
         />
       )}
