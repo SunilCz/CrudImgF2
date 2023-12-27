@@ -26,7 +26,7 @@ const Navbar = () => {
   };
 
   const handleCreateClick = () => {
-    navigator('/create'); // Navigating to the /create path
+    navigator('/create');
     handleClose();
   };
 

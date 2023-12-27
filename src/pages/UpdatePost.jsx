@@ -1,9 +1,9 @@
-// pages/UpdatePost.jsx
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, TextField, Button } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import JoditEditor from 'jodit-react';
 
 const URL = process.env.REACT_APP_CRUD;
 
@@ -11,12 +11,12 @@ const UpdatePost = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [blog, setBlog] = useState({ title: '', content: '', image: null });
-  
+
   useEffect(() => {
-    // Fetch blog details based on id
+    
     const fetchData = async () => {
       try {
-        const response = await fetch(`${URL}/api/blog/${id}`);
+        const response = await fetch(`${URL}/api/blog/post/${id}`);
         const data = await response.json();
         setBlog(data);
       } catch (error) {
@@ -38,11 +38,18 @@ const UpdatePost = () => {
     setBlog({ ...blog, image: file });
   };
 
+
+
+  const stripHtml = (html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || '';
+  };
+
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
       formData.append('title', blog.title);
-      formData.append('content', blog.content);
+      formData.append('content', stripHtml(blog.content));
       formData.append('image', blog.image);
 
       const res = await fetch(`${URL}/api/blog/update/${id}`, {
@@ -58,7 +65,7 @@ const UpdatePost = () => {
 
         setTimeout(() => {
           navigate('/');
-        }, 1500);
+        }, 1000);
       } else {
         console.log(data);
       }
@@ -69,7 +76,7 @@ const UpdatePost = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <Card
         sx={{
           p: 4,
@@ -102,15 +109,15 @@ const UpdatePost = () => {
           onChange={handleImageChange}
           style={{ margin: '10px 0' }}
         />
-        <TextField
-          id="outlined-basic"
-          label="Content"
-          variant="outlined"
-          name="content"
-          rows={7}
-          onChange={handleChange}
+         <JoditEditor
           value={blog.content}
-          multiline
+          config={{
+            minHeight: 300, 
+            toolbarAdaptive: false,
+            defaultMode: '1',
+          }}
+          tabIndex={1}
+          onBlur={(newContent) => setBlog({ ...blog, content: newContent })}
         />
         <Button variant="contained" onClick={handleSubmit}>
           Update Post

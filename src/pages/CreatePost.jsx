@@ -1,15 +1,15 @@
-// pages/CreatePost.jsx
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, TextField, Button } from '@mui/material';
+import { Card, CardContent, Typography, Button, TextField } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import JoditEditor from 'jodit-react';
 
 const URL = process.env.REACT_APP_CRUD;
 
 const CreatePost = () => {
   const navigate = useNavigate();
-  const [blog, setBlog] = useState({ title: '', content: '', image: null }); // Use null for image
+  const [blog, setBlog] = useState({ title: '', content: '', image: null });
 
   const handleChange = (e) => {
     const name = e.target.name;
@@ -22,12 +22,16 @@ const CreatePost = () => {
     setBlog({ ...blog, image: file });
   };
 
+  const stripPTags = (html) => {
+    return html.replace(/<\/?p>/g, '');
+  };
+
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
       formData.append('title', blog.title);
-      formData.append('content', blog.content);
-      formData.append('image', blog.image); // Append the image file to the formData
+      formData.append('content', stripPTags(blog.content));
+      formData.append('image', blog.image);
 
       const res = await fetch(`${URL}/api/blog/create`, {
         method: 'POST',
@@ -37,13 +41,13 @@ const CreatePost = () => {
       const data = await res.json();
       if (res.ok) {
         console.log(data);
-        setBlog({ title: '', content: '', image: null }); // Reset image state
+        setBlog({ title: '', content: '', image: null });
 
         toast.success('Created successfully');
 
         setTimeout(() => {
           navigate('/');
-        }, 1500);
+        }, 1000);
       } else {
         console.log(data);
       }
@@ -54,7 +58,7 @@ const CreatePost = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <Card
         sx={{
           p: 4,
@@ -87,16 +91,17 @@ const CreatePost = () => {
           onChange={handleImageChange}
           style={{ margin: '10px 0' }}
         />
-        <TextField
-          id="outlined-basic"
-          label="Content"
-          variant="outlined"
-          name="content"
-          rows={7}
-          onChange={handleChange}
+        <JoditEditor
           value={blog.content}
-          multiline
+          config={{
+            minHeight: 300, 
+            toolbarAdaptive: false,
+            defaultMode: '1',
+          }}
+          tabIndex={1}
+          onBlur={(newContent) => setBlog({ ...blog, content: newContent })}
         />
+        
         <Button variant="contained" onClick={handleSubmit}>
           Create Post
         </Button>

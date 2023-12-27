@@ -27,12 +27,12 @@ const PostDetails = () => {
 
   return (
     <div>
-      <h2>{blog.title}</h2>
+     <h2>{blog.title}</h2>
       <p>{blog.content}</p>
       {blog.image && (
         <img
           src={`${process.env.REACT_APP_CRUD}/uploads/${blog.image}`}
-          alt={`${blog.title} Image`}
+          alt={blog.title}
           style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'cover' }}
         />
       )}
