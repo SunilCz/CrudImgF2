@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, TextField, Button } from '@mui/material';
+import { Box, TextField, Button, MenuItem, Select } from '@mui/material';
 import PostCard from './PostCard';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -15,12 +15,21 @@ const DisplayPost = () => {
   const location = useLocation();
   const searchInputRef = useRef(null);
   const searchResultsRef = useRef([]);
+  const [perPage, setPerPage] = useState(3);
+
+  const handlePerPageChange = (event) => {
+    const newPerPage = event.target.value;
+  setPerPage(newPerPage);
+    navigate(`${location.pathname}?page=${currentPage}&perPage=${newPerPage}`);
+  };
+
 
   const handlePostDelete = (postId) => {
     setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
   };
 
   const handleImageClick = (postId) => {
+    
     navigate(`/post/${postId}`);
   };
 
@@ -33,7 +42,7 @@ const DisplayPost = () => {
         setSearchResults([]);
       } else {
         const res = await fetch(
-          `${URL}/api/blog/search?q=${encodeURIComponent(query)}&page=1&limit=3`
+          `${URL}/api/blog/search?q=${encodeURIComponent(query)}&page=1&limit=${perPage}`
         );
         const data = await res.json();
         if (res.ok) {
@@ -51,7 +60,7 @@ const DisplayPost = () => {
   const handleSearch = async () => {
     try {
       const res = await fetch(
-        `${URL}/api/blog/search?q=${encodeURIComponent(searchQuery)}&page=1&limit=3`
+        `${URL}/api/blog/search?q=${encodeURIComponent(searchQuery)}&page=1&limit=${perPage}`
       );
       const data = await res.json();
       if (res.ok) {
@@ -72,19 +81,19 @@ const DisplayPost = () => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
       // Update the URL with the new page
-      navigate(`${location.pathname}?page=${newPage}&limit=3`);
+      navigate(`${location.pathname}?page=${newPage}&limit=${perPage}`);
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        let apiEndpoint = `${URL}/api/blog/?page=${currentPage}&limit=3`;
+        let apiEndpoint = `${URL}/api/blog/?page=${currentPage}&perPage=${perPage}`;
 
         // Check if there's a search query in the URL
         const query = new URLSearchParams(location.search).get('q');
         if (query) {
-          apiEndpoint = `${URL}/api/blog/search?q=${encodeURIComponent(query)}&page=${currentPage}&limit=3`;
+          apiEndpoint = `${URL}/api/blog/search?q=${encodeURIComponent(query)}&page=${currentPage}&limit=${perPage}`;
           setSearchQuery(query);
         }
 
@@ -102,7 +111,7 @@ const DisplayPost = () => {
     };
 
     fetchData();
-  }, [currentPage, location.search]);
+  }, [currentPage, perPage, location.search]);
 
   // Collapse search results when clicking outside the search bar
   const handleClickOutside = (event) => {
@@ -185,6 +194,17 @@ const DisplayPost = () => {
           Next
         </Button>
       </div>
+      <Select
+        value={perPage}
+        onChange={handlePerPageChange}
+        style={{ marginLeft: '10px' }}
+      >
+        <MenuItem value={3}>3</MenuItem>
+        <MenuItem value={5}>5</MenuItem>
+        <MenuItem value={7}>7</MenuItem>
+        <MenuItem value={10}>10</MenuItem>
+        <MenuItem value={9999}>All</MenuItem>
+      </Select>
     </Box>
   );
 };
