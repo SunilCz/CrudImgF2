@@ -7,7 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 const Navbar = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const navigator = useNavigate(); // Using useNavigate to get the navigation function
+  const navigator = useNavigate();
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
@@ -33,7 +33,11 @@ const Navbar = () => {
   return (
     <AppBar sx={{ p: "0 5%" }}>
       <Toolbar sx={{ justifyContent: "space-between" }}>
-        <h3>CRUD</h3>
+      <h3>
+          <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>
+            CRUD
+          </Link>
+        </h3>
         <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
           {isNonMobileDevice ? (
             <>

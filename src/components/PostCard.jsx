@@ -10,7 +10,7 @@ import { red } from '@mui/material/colors';
 import Actions from './Actions';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
-import PostModal from './PostModal'; // Add this line
+import PostModal from './PostModal'; 
 
 export default function PostCard(props) {
   const { user, _id, title, content, image, createdOn } = props.post;

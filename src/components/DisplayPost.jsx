@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import PostCard from './PostCard';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -13,6 +13,8 @@ const DisplayPost = () => {
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
+  const searchInputRef = useRef(null);
+  const searchResultsRef = useRef([]);
 
   const handlePostDelete = (postId) => {
     setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
@@ -22,31 +24,27 @@ const DisplayPost = () => {
     navigate(`/post/${postId}`);
   };
 
-  const handleSearchChange = async (query, keyPressed) => {
+  const handleSearchChange = async (query) => {
     setSearchQuery(query);
 
-    // Check if Enter key is pressed
-    if (keyPressed === 'Enter') {
-      await handleSearch();
-    } else {
-      try {
-        if (query.trim() === '') {
-          // If the search query is empty, reset search results
-          setSearchResults([]);
+    try {
+      if (query.trim() === '') {
+        // If the search query is empty, reset search results
+        setSearchResults([]);
+      } else {
+        const res = await fetch(
+          `${URL}/api/blog/search?q=${encodeURIComponent(query)}&page=1&limit=3`
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setSearchResults(data.results);
+          searchResultsRef.current = data.results; // Store the current search results
         } else {
-          const res = await fetch(
-            `${URL}/api/blog/search?q=${encodeURIComponent(query)}&page=1&limit=3`
-          );
-          const data = await res.json();
-          if (res.ok) {
-            setSearchResults(data.results);
-          } else {
-            console.log(data);
-          }
+          console.log(data);
         }
-      } catch (error) {
-        console.error('Error searching data:', error);
       }
+    } catch (error) {
+      console.error('Error searching data:', error);
     }
   };
 
@@ -61,6 +59,7 @@ const DisplayPost = () => {
         setTotalPages(1); // Reset totalPages for search results
         // Reset search results when search is successful
         setSearchResults([]);
+        searchResultsRef.current = []; // Reset the previous search results when a new search is performed
       } else {
         console.log(data);
       }
@@ -105,8 +104,25 @@ const DisplayPost = () => {
     fetchData();
   }, [currentPage, location.search]);
 
+  // Collapse search results when clicking outside the search bar
+  const handleClickOutside = (event) => {
+    if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+      setSearchResults([]);
+    }
+  };
+
+  useEffect(() => {
+    // Attach the click event listener when the component mounts
+    document.addEventListener('click', handleClickOutside);
+
+    // Detach the click event listener when the component unmounts
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <Box sx={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', margin: 'auto', gap: 3, py: 2 }}>
+    <Box sx={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', margin: 'auto', gap: 3, py: 2, position: 'relative' }}>
       <TextField
         label="Search by Title"
         variant="outlined"
@@ -117,15 +133,32 @@ const DisplayPost = () => {
             handleSearch();
           }
         }}
+        inputRef={searchInputRef}
+        onFocus={() => setSearchResults(searchResultsRef.current || [])} // Restore search results when the search bar is focused
+        
       />
 
-      {/* Display search recommendations with smaller images */}
-      {searchResults.map((result) => (
-        <div key={result._id} onClick={() => handleImageClick(result._id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={`${URL}/uploads/${result.image}`} alt={result.title} style={{ maxWidth: '50px', maxHeight: '50px' }} />
-          <span>{result.title}</span>
+      {searchResults.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: searchInputRef.current ? searchInputRef.current.offsetHeight + 20 : '70px', // Position below the search input
+            left: 0,
+            width: '100%',
+            backgroundColor: 'white',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+            borderRadius: '4px',
+            zIndex: 1,
+          }}
+        >
+          {searchResults.map((result) => (
+            <div key={result._id} onClick={() => handleImageClick(result._id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px' }}>
+              <img src={`${URL}/uploads/${result.image}`} alt={result.title} style={{ maxWidth: '50px', maxHeight: '50px' }} />
+              <span>{result.title}</span>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
 
       <Button variant="contained" onClick={handleSearch}>
         Search
