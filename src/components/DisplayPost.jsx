@@ -154,7 +154,8 @@ const DisplayPost = () => {
             top: searchInputRef.current ? searchInputRef.current.offsetHeight + 20 : '70px', // Position below the search input
             left: 0,
             width: '100%',
-            backgroundColor: 'white',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(5px)',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             borderRadius: '4px',
             zIndex: 1,
