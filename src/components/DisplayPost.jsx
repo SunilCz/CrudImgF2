@@ -185,7 +185,7 @@ const DisplayPost = () => {
         />
       ))}
 
-      <div>
+<div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
         <Button variant="outlined" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
           Previous
         </Button>
@@ -193,18 +193,19 @@ const DisplayPost = () => {
         <Button variant="outlined" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
           Next
         </Button>
+        <Select
+          value={perPage}
+          onChange={handlePerPageChange}
+          style={{ marginLeft: '10px', width: '80px' }}
+          size="small"
+        >
+          <MenuItem value={3}>3</MenuItem>
+          <MenuItem value={5}>5</MenuItem>
+          <MenuItem value={7}>7</MenuItem>
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={9999}>All</MenuItem>
+        </Select>
       </div>
-      <Select
-        value={perPage}
-        onChange={handlePerPageChange}
-        style={{ marginLeft: '10px' }}
-      >
-        <MenuItem value={3}>3</MenuItem>
-        <MenuItem value={5}>5</MenuItem>
-        <MenuItem value={7}>7</MenuItem>
-        <MenuItem value={10}>10</MenuItem>
-        <MenuItem value={9999}>All</MenuItem>
-      </Select>
     </Box>
   );
 };
