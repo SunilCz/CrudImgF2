@@ -10,17 +10,27 @@ const URL = process.env.REACT_APP_CRUD;
 const CreatePost = () => {
   const navigate = useNavigate();
   const [blog, setBlog] = useState({ title: '', content: '', image: null });
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const handleChange = (e) => {
     const name = e.target.name;
     const value = e.target.value;
     setBlog({ ...blog, [name]: value });
   };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+
+    // Check if the file size is within the limit (5MB)
+    if (file && file.size > 5 * 1024 * 1024) {
+      setErrorMessage('File size exceeds the limit (5MB). Please choose a smaller file.');
+      return;
+    }
+
     setBlog({ ...blog, image: file });
+    setErrorMessage(''); // Clear any previous error message
   };
+  
 
   const stripPTags = (html) => {
     return html.replace(/<\/?p>/g, '');
@@ -28,33 +38,41 @@ const CreatePost = () => {
 
   const handleSubmit = async () => {
     try {
+      // Check for the presence of an error message
+      if (errorMessage) {
+        console.error('Error: Cannot create post due to file size limit.');
+        toast.error('Error: Cannot create post due to file size limit.');
+        return;
+      }
+  
       const formData = new FormData();
       formData.append('title', blog.title);
       formData.append('content', stripPTags(blog.content));
       formData.append('image', blog.image);
-
+  
       const res = await fetch(`${URL}/api/blog/create`, {
         method: 'POST',
         body: formData,
       });
-
+  
       const data = await res.json();
       if (res.ok) {
         console.log(data);
         setBlog({ title: '', content: '', image: null });
-
+  
         toast.success('Created successfully');
-
+  
         setTimeout(() => {
           navigate('/');
         }, 1000);
       } else {
-        console.log(data);
+        console.error(data);
       }
     } catch (error) {
       console.error('Error creating:', error);
     }
   };
+  
 
   return (
     <>
@@ -90,7 +108,9 @@ const CreatePost = () => {
           accept="image/*"
           onChange={handleImageChange}
           style={{ margin: '10px 0' }}
+          
         />
+{errorMessage && <p style={{ color: 'red', fontSize: '12px', marginTop: '-30px' }}>{errorMessage}</p>}
         <JoditEditor
           value={blog.content}
           config={{

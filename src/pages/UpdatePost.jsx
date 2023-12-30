@@ -11,6 +11,7 @@ const UpdatePost = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [blog, setBlog] = useState({ title: '', content: '', image: null });
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     
@@ -35,6 +36,10 @@ const UpdatePost = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+      setErrorMessage('File size exceeds the limit (5MB). Please choose a smaller file.');
+      return;
+    }
     setBlog({ ...blog, image: file });
   };
 
@@ -47,6 +52,13 @@ const UpdatePost = () => {
 
   const handleSubmit = async () => {
     try {
+
+      if (errorMessage) {
+        console.error('Error: Cannot create post due to file size limit.');
+        toast.error('Error: Cannot create post due to file size limit.');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('title', blog.title);
       formData.append('content', stripHtml(blog.content));
@@ -109,6 +121,7 @@ const UpdatePost = () => {
           onChange={handleImageChange}
           style={{ margin: '10px 0' }}
         />
+        {errorMessage && <p style={{ color: 'red', fontSize: '12px', marginTop: '-30px' }}>{errorMessage}</p>}
          <JoditEditor
           value={blog.content}
           config={{
